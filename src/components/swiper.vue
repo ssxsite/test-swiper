@@ -7,7 +7,7 @@
             </div>
         </div>
         <!-- 左右滑动-->
-        <div class="mui-swipe__track" :style="[{width:ulWidth},{ 'transition-duration': '500ms','transform':'translateX(-'+(listWidth*(nowIndex+1))+'%)'}]"
+        <div class="mui-swipe__track" :style="[{width:ulWidth},{'transform':'translateX(-'+(listWidth*(nowIndex+1))+'%)'}]"
              v-if="list.length >1"
              @touchstart="touchStar" @touchend="touchEnd"
              :class="{'mui-swipe--tran':noLast}">
@@ -137,7 +137,9 @@
                     else{
                         this.nowIndex = 0;
                     }
+                    // this.nowIndex = 0;
                 }
+
                 //是否显示图片，只针对透明度切换的情况！
                 setTimeout(()=>{
                     this.nowIndexShow=this.nowIndex;
