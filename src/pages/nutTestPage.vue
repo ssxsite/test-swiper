@@ -4,7 +4,8 @@
                 :paginationVisibile="true"
                 direction="horizontal"
                 :swiperData="dataImgItem"
-                :loop="true"
+                :loop="false"
+                :paginationVisible="true"
         >
             <div  v-for="(item,index) in dataImgItem" :key="index"  class="nut-swiper-slide">
                 <img :src="item.imgSrc"   style="max-width:100%;"/>

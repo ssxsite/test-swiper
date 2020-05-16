@@ -1,14 +1,18 @@
 <template>
   <div>
-    <swiper :list='list' :autoplay="true" :type="'slide'" :option="true"
-            :time="4000" :height="100"  :loop="true">
+    <swiper :list='list' :autoplay="true" :type="'slide'" :paginationVisible="true"
+            :time="1000" :height="200"  :loop="true" :initPage="1">
       <div  v-for="(item,index) in list" :key="index"  class="mui-swiper-slide">
         <img :src="item.imgSrc"   style="max-width:100%;"/> 
       </div>
     </swiper>
     <div style="height: 100px;"></div>
-<!--    <swiper :list='list' :autoplay="true" :type="'slide'" :option="true" :vertical="true"-->
-<!--            :time="4000" :height="100"></swiper>-->
+    <swiper :list='list' :autoplay="false" :type="'slide'" :paginationVisible="true" :vertical="true"
+            :time="4000" :height="300" :loop="true" :initPage="2">
+      <div  v-for="(item,index) in list" :key="index"  class="mui-swiper-slide">
+        <img :src="item.imgSrc"   style="max-width:100%;"/>
+      </div>
+    </swiper>
   </div>
 </template>
 
