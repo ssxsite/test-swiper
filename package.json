@@ -8,7 +8,10 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "@nutui/nutui": "^2.2.4",
     "core-js": "^3.6.4",
+    "node-sass": "^4.14.1",
+    "sass-loader": "^8.0.2",
     "vue": "^2.6.11"
   },
   "devDependencies": {
@@ -25,14 +28,9 @@
     "env": {
       "node": true
     },
-    "extends": [
-      "plugin:vue/essential",
-      "eslint:recommended"
-    ],
-    "parserOptions": {
-      "parser": "babel-eslint"
-    },
-    "rules": {}
+    "extends": ["plugin:vue/essential"],
+    "rules": {},
+    "parserOptions": {}
   },
   "browserslist": [
     "> 1%",

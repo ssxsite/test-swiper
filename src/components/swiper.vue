@@ -1,38 +1,43 @@
 <template>
-    <div class="mui-swipe">
-        <!-- 只有一张的时候，只显示，不做任何操作 -->
-        <div v-if="list.length===1">
-            <div v-for="(li,index) in list" :style="{'width':listWidth+'%'}" :key="index">
-                <p style="height: 150px;line-height:150px;background-color: dodgerblue;text-align: center;">
-                    {{index+1}}</p>
-            </div>
-        </div>
+    <div class="mui-swipe" :class="[vertical ? 'vertical':'horizontal']" :style="[{'height': height+'px'}]">
         <!-- 左右滑动-->
-        <div class="mui-swipe__track"
-             :style="[{width:ulWidth},{'transform':'translateX(-'+(listWidth*(nowIndex+1))+'%)'}]"
-             v-if="list.length >1"
-             @touchstart="touchStar" @touchend="touchEnd"
-             :class="{'mui-swipe--tran':noLast}">
-            <!--最后一张-->
-            <div :style="{'width':listWidth+'%'}">
-                <p style="height: 150px;line-height:150px;background-color: dodgerblue;text-align: center;">
-                    {{list.length}}</p>
+        <template v-if="!vertical">
+            <div class="mui-swipe-wrap"
+                 :style="{'transform':'translate3d('+translateX+'px,'+translateY+'px,0)'}"
+                 v-if="list.length >1 && !vertical"
+                 @touchstart="touchStar" @touchend="touchEnd"
+                 :class="{'mui-swipe--tran':noLast}">
+                <slot></slot>
             </div>
-            <div v-for="(li,index) in list" :style="{'width':listWidth+'%'}" :key="index">
-                <p style="height: 150px;line-height:150px;background-color: dodgerblue;text-align: center;">
-                    {{index+1}}</p>
+            <!--如果需要显示对应的点-->
+            <div class="mui-swipe__indicators" v-if="option && list.length >1 && !vertical">
+                <i v-for="(li,index) in list" :key="index"
+                   :class="{'mui-swipe__indicator':true,'mui-swipe__indicator--active':index===nowIndex}"
+                   :style="index===nowIndex ? indicatorStyle : null"></i>
             </div>
-            <!--第一张-->
-            <div :style="{'width':listWidth+'%'}">
-                <p style="height: 150px;line-height:150px;background-color: dodgerblue;text-align: center;">{{1}}</p>
+        </template>
+
+        <!-- 上下滑动-->
+        <template v-else>
+            <div :style="[{'height':boxHeight},{'transform':'translateY(-'+(listWidth*(nowIndex+1))+'%)'}]"
+                 v-if="list.length >1 && vertical"
+                 @touchstart="touchStar" @touchend="touchEnd"
+                 :class="{'mui-swipe--tran':noLast}">
+                <!--最后一张-->
+                <div :style="{'height':height+'px'}">
+                    <p style="height:100%;background-color: dodgerblue;text-align: center;">
+                        {{list.length}}</p>
+                </div>
+                <div v-for="(li,index) in list" :style="{'height':height+'px'}" :key="index">
+                    <p style="height:100%;background-color: dodgerblue;text-align: center;">
+                        {{index+1}}</p>
+                </div>
+                <!--第一张-->
+                <div :style="{'height':height+'px'}">
+                    <p style="height:100%;background-color: dodgerblue;text-align: center;">{{1}}</p>
+                </div>
             </div>
-        </div>
-        <!--如果需要显示对应的点-->
-        <div class="mui-swipe__indicators" v-if="option && list.length >1">
-            <i v-for="(li,index) in list" :key="index"
-               :class="{'mui-swipe__indicator':true,'mui-swipe__indicator--active':index===nowIndex}"
-               :style="index===nowIndex ? indicatorStyle : null"></i>
-        </div>
+        </template>
     </div>
 </template>
 
@@ -58,6 +63,10 @@
                 type: Number,
                 default: 4000,
             },
+            'height': {
+                type: Number,
+                default: 0,
+            },
             'option': {
                 type: Boolean,
                 default: true,
@@ -70,6 +79,14 @@
                 type: String,
                 default: '#fff',
             },
+            loop:{
+                type:Boolean,
+                default:false
+            },
+            initPage:{
+                type:Number,
+                default:1
+            },
         },
         data() {
             return {
@@ -78,7 +95,15 @@
                 noLast: true,
                 startX: 0,
                 startY: 0,
-                test: true
+                test: true,
+                isLoop:this.loop,
+                domTimer:null,//渲染延迟查找
+                swiperWrap:null,
+                oneSlideTranslate:0,//一个slide的大小
+                translateOffset:0,//当前偏移初始位置距离
+                currentPage:this.initPage,
+                translateX:0,
+                translateY:0,
             };
         },
         computed: {
@@ -86,10 +111,13 @@
             ulWidth: function () {
                 return (this.list.length + 2) + "00%";
             },
-            //li宽度
-            listWidth: function () {
-                return 100 / (this.list.length + 2)
+            boxHeight: function () {
+                return this.height * (this.list.length + 2) + "px";
             },
+            //li宽度
+            // listWidth: function () {
+            //     return 100 / (this.list.length + 2)
+            // },
             indicatorStyle() {
                 return {
                     backgroundColor: this.indicatorColor,
@@ -97,6 +125,7 @@
             },
         },
         mounted() {
+            this.initSwiper();
             //是否自动播放
             if (this.autoplay) {
                 this.autoSwitch();
@@ -104,6 +133,73 @@
 
         },
         methods: {
+            initSwiper(){
+                this.$nextTick(()=>{
+                    this.domTimer = setTimeout(()=>{
+                        this.swiperWrap = this.$el.querySelector('.mui-swipe-wrap');
+                        this.slideEls = [...this.swiperWrap.children];
+                        if(this.slideEls.length === 0) return;
+                        this._getSlideDistance((this.slideEls)[0]);
+                        // if(this.autoplay){
+                        //     this.isLoop = true;
+                        //     this._createAutoPlay();
+                        // }
+                        this.isLoop && this._createLoop();
+                        this.setPage(this.currentPage, false);
+                        // this.lazyLoad && this.renderLazyDom(this.slideEls) && this._imgLazyLoad();
+                    },0)
+
+
+                })
+            },
+            setPage(page){
+                if(page === 0){
+                    this.currentPage = this.slideEls.length;
+                }else if(page === this.slideEls.length + 1){
+                    this.currentPage = 1;
+                }else{
+                    this.currentPage = page;
+                }
+                this._setTranslate(this._getTranslateOfPage(page));
+                // if(!isHasAnimation){
+                //     this._slideClassHandle();
+                // }else{
+                //     this._onTransitionStart(type);
+                // }
+            },
+            _setTranslate(value){
+                let translateName = !this.vertical ? 'translateX' :'translateY';
+                this[translateName] = value;
+            },
+            _getSlideDistance(el){
+                let styleArr = getComputedStyle(el);
+                let marginTop = styleArr['marginTop'].replace('px','') - 0;
+                let marginBottom = styleArr['marginBottom'].replace('px','') - 0;
+                let marginRight = styleArr['marginRight'].replace('px','') - 0;
+                let marginLeft = styleArr['marginLeft'].replace('px','') - 0;
+                if(!this.vertical){
+                    this.oneSlideTranslate = marginRight + marginLeft + el['offsetWidth'];
+                }else{
+                    this.oneSlideTranslate = marginTop + marginBottom + el['offsetHeight'];
+                }
+            },
+            _createLoop(){
+                // let propName = this.vertical ? 'offsetHeight': 'offsetWidth';
+                let swiperWrapEl = this.$el.querySelector('.mui-swipe-wrap');
+                let duplicateFirstChild = swiperWrapEl.firstElementChild.cloneNode(true);
+                let duplicateLastChild = swiperWrapEl.lastElementChild.cloneNode(true);
+                swiperWrapEl.insertBefore(duplicateLastChild,swiperWrapEl.firstElementChild);
+                swiperWrapEl.appendChild(duplicateFirstChild);
+                this.translateOffset = - this.oneSlideTranslate;
+            },
+            _getTranslateOfPage(page){
+                if(page === 0)  return 0;
+                // let propName = !this.vertical ? 'offsetWidth':'offsetHeight';
+                let _this = this;
+                return -[].reduce.call(this.slideEls,function(total,el,i){
+                    return i> page-2? total : total+_this.oneSlideTranslate;
+                },0) + this.translateOffset;
+            },
             //滑动操作
             switchDo(reduce) {
                 clearInterval(this.timer);
@@ -191,28 +287,41 @@
                     }
                 }
             },
+        },
+        destroyed(){
+            this.domTimer = null;
         }
     };
 </script>
-<style lang="css">
+<style lang="scss" scoped>
     .mui-swipe {
-        width: 100%;
-        height: 100%;
-        margin-left: auto;
-        margin-right: auto;
         position: relative;
         overflow: hidden;
+        margin: 0 auto;
         cursor: grab;
         user-select: none;
-        list-style: none;
-        padding: 0;
-        z-index: 1;
+        .mui-swipe-wrap {
+            display: flex;
+            height: 100%;
+        }
+        .mui-swiper-slide{
+            overflow: hidden;
+            flex-shrink: 0;
+            -webkit-flex-shrink:0;
+            width:100%;
+            height:100%;
+            cursor: default;
+            position: relative;
+        }
+        &.horizontal .mui-swipe-wrap{
+            flex-direction: row;
+        }
+        &.vertical .mui-swipe-wrap{
+            flex-direction: column;
+        }
     }
 
-    .mui-swipe__track {
-        display: flex;
-        height: 100%;
-    }
+
 
     .mui-swipe--tran {
         transition: all .4s;
