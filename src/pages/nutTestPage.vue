@@ -5,6 +5,7 @@
                 direction="horizontal"
                 :swiperData="dataImgItem"
                 :loop="false"
+                :autoPlay="1000"
                 :paginationVisible="true"
         >
             <div  v-for="(item,index) in dataImgItem" :key="index"  class="nut-swiper-slide">

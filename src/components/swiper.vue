@@ -9,19 +9,13 @@
                  :class="{'mui-swipe--tran':noLast}">
                 <slot></slot>
             </div>
-            <!--&lt;!&ndash;如果需要显示对应的点&ndash;&gt;-->
-            <!--<div class="mui-swipe__indicators" v-if="option && list.length >1 && !vertical">-->
-                <!--<i v-for="(li,index) in list" :key="index"-->
-                   <!--:class="{'mui-swipe__indicator':true,'mui-swipe__indicator&#45;&#45;active':index===nowIndex}"-->
-                   <!--:style="index===nowIndex ? indicatorStyle : null"></i>-->
-            <!--</div>-->
         </template>
 
         <!-- 上下滑动-->
         <template v-else>
-            <div :style="[{'height':boxHeight},{'transform':'translate3d(0,-'+translateLength+'%,0)'}]"
+            <div  class="mui-swipe-wrap"
+                  :style="[{'height':boxHeight},{'transform':'translate3d(0,-'+translateLength+'%,0)'}]"
                  v-if="list.length >1 && vertical"
-                 class="mui-swipe-wrap"
                  @touchstart="touchStar" @touchend="touchEnd"
                  :class="{'mui-swipe--tran':noLast}">
                 <slot></slot>
@@ -31,6 +25,7 @@
         <div class="mui-swipe__indicators" v-show="paginationVisible">
             <span class="swiper-pagination-bullet"
                   :class="{'active':index === nowIndex}"
+                  :style="[index === nowIndex ? indicatorStyle : null]"
                   v-for="(slide,index) in list"
                   :key ="index"
             >
@@ -49,17 +44,9 @@
                     return []
                 }
             },
-            'autoplay': {
-                type: Boolean,
-                default: true,
-            },
-            'type': {
-                type: String,
-                default: 'slide',
-            },
-            'time': {
-                type: Number,
-                default: 4000,
+            'autoPlay': {
+                type:Number,
+                default:0
             },
             'height': {
                 type: Number,
@@ -75,7 +62,7 @@
             },
             'indicatorColor': {
                 type: String,
-                default: '#fff',
+                default: '#007aff',
             },
             loop: {
                 type: Boolean,
@@ -93,13 +80,9 @@
                 noLast: true,
                 startX: 0,
                 startY: 0,
-                test: true,
                 isLoop: this.loop,
                 domTimer: null,//渲染延迟查找
-                swiperWrap: null,
-                oneSlideTranslate: 0,//一个slide的大小
-                translateX: 0,
-                translateY: 0,
+                swiperWrap: null
             };
         },
         computed: {
@@ -140,10 +123,12 @@
                 };
             },
         },
+
         mounted() {
             this.initSwiper();
             //是否自动播放
-            if (this.autoplay) {
+            if (this.autoPlay) {
+                this.isLoop = true;
                 this.autoSwitch();
             }
         },
@@ -186,61 +171,59 @@
                             setTimeout(() => {
                                 this.nowIndex = this.list.length - 1;
                                 this.noLast = false;
+                                this.$emit('change',this.nowIndex);
                             }, 400)
                         }else {
                             this.nowIndex = 0;
+                            this.$emit('change',this.nowIndex);
                         }
                     } else {
                         this.nowIndex--;
+                        this.$emit('change',this.nowIndex);
                     }
                 } else {
                     this.nowIndex++;
-                    if (this.isLoop) {
-                        if (this.nowIndex === this.list.length) {
+                    if (this.nowIndex === this.list.length) {
+                        if (this.isLoop) {
                             setTimeout(() => {
                                 this.nowIndex = 0;
                                 this.noLast = false;
+                                this.$emit('change',this.nowIndex);
                             }, 400)
-                        }
-                    } else {
-                        if (this.nowIndex === this.list.length) {
-                            // if (this.type === 'slide') {
-                            //     //执行完了这次动画之后，去除过渡效果
-                            //     setTimeout(() => {
-                            //         this.nowIndex = 0;
-                            //         this.noLast = false;
-                            //     }, 400)
-                            // }
-                            // else {
-                            //     this.nowIndex = 0;
-                            // }
+                        }else {
                             this.nowIndex = this.list.length - 1;
                             this.noLast = true;
+                            this.$emit('change',this.nowIndex);
+                            clearInterval(this.timer);
                         }
+
+                    }else {
+                        this.$emit('change',this.nowIndex);
                     }
                 }
                 this.noLast = true;
                 //如果需要自动播放
-                if (this.autoplay) {
+                if (this.autoPlay) {
                     this.autoSwitch();
                 }
             },
             //自动播放函数
             autoSwitch() {
-                let time = this.time || 4000;
-                this.timer = setInterval(() => {
-                    this.switchDo();
-                }, time);
+                if(!this.autoPlay){
+                    return;
+                }else {
+                    this.timer = setInterval(() => {
+                        this.switchDo();
+                    }, this.autoPlay);
+                }
             },
             //开始滑动
             touchStar(e) {
-                // e.preventDefault();
                 this.startX = e.changedTouches[0].clientX;
                 this.startY = e.changedTouches[0].clientY;
             },
             //滑动结束
             touchEnd(e) {
-                //e.preventDefault();
                 if (this.vertical) {
                     if (e.changedTouches[0].clientY - this.startY > 50) {
                         this.switchDo('reduce')
@@ -291,11 +274,6 @@
         }
         .mui-swipe__indicators {
             position: absolute;
-            /*<!--bottom: 24px;-->*/
-            /*<!--left: 50%;-->*/
-            /*<!--z-index: 5;-->*/
-            /*<!--display: flex;-->*/
-            /*<!--transform: translateX(-50%);-->*/
             .swiper-pagination-bullet{
                 width:8px;
                 height:8px;
@@ -306,7 +284,6 @@
                 -webkit-transition:all .5s ease;
             }
             .swiper-pagination-bullet.active{
-                background-color:#007aff;
                 opacity: 1;
             }
         }

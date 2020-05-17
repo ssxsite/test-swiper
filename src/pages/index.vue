@@ -1,14 +1,14 @@
 <template>
   <div>
-    <swiper :list='list' :autoplay="true" :type="'slide'" :paginationVisible="true"
-            :time="1000" :height="200"  :loop="true" :initPage="1">
+    <swiper :list='list' :autoPlay="0" :paginationVisible="true" :vertical="false"
+            :height="100"  :loop="true" :initPage="1" :indicatorColor="'yellow'">
       <div  v-for="(item,index) in list" :key="index"  class="mui-swiper-slide">
-        <img :src="item.imgSrc"   style="max-width:100%;"/> 
+        <img :src="item.imgSrc"   style="max-width:100%;"/>
       </div>
     </swiper>
     <div style="height: 100px;"></div>
-    <swiper :list='list' :autoplay="false" :type="'slide'" :paginationVisible="true" :vertical="true"
-            :time="4000" :height="300" :loop="true" :initPage="2">
+    <swiper :list='list' :autoPlay="3000" :type="'slide'" :paginationVisible="true" :vertical="true"
+             :height="300" :loop="true" :initPage="2"  @change="pageChange">
       <div  v-for="(item,index) in list" :key="index"  class="mui-swiper-slide">
         <img :src="item.imgSrc"   style="max-width:100%;"/>
       </div>
@@ -35,11 +35,15 @@ export default {
               }
             ]
         };
+    },
+    methods:{
+        pageChange(index){
+            console.log('pageChange',index);
+        }
     }
 }
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style  lang="scss" scoped>
   .mui-swiper-slide{
     font-size:24px;
