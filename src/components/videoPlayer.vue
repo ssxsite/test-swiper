@@ -276,34 +276,33 @@
                         top: 0;
                         overflow: hidden;
                     }
+                    video {
+                        object-position: 0 0;
+                    }
+                    .play {
+                        position: absolute;
+                        margin: auto;
+                        top: 0;
+                        left: 0;
+                        z-index: 1001;
+                        width: 100%;
+                        height: 100%;
+                    }
+                    .icon_play {
+                        position: absolute;
+                        top: 50%;
+                        right: 0;
+                        left: 0;
+                        bottom: auto;
+                        margin: -30px auto 0;
+                        z-index: 1002;
+                        height: 60px;
+                        background: rgba(0, 0, 0, 0.5);
+                        border-radius: 50%;
+                    }
                 }
 
-                video {
-                    object-position: 0 0;
-                }
 
-                .play {
-                    position: absolute;
-                    margin: auto;
-                    top: 0;
-                    left: 0;
-                    z-index: 1001;
-                    width: 100%;
-                    height: 100%;
-                }
-
-                .icon_play {
-                    position: absolute;
-                    top: 50%;
-                    right: 0;
-                    left: 0;
-                    bottom: auto;
-                    margin: -30px auto 0;
-                    z-index: 1002;
-                    height: 60px;
-                    background: rgba(0, 0, 0, 0.5);
-                    border-radius: 50%;
-                }
             }
 
             .van-swipe {

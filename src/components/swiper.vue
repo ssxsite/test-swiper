@@ -179,7 +179,9 @@
                         }
                     } else {
                         this.nowIndex--;
-                        this.$emit('change',this.nowIndex);
+                        if(this.nowIndex >= 0){
+                            this.$emit('change',this.nowIndex);
+                        }
                     }
                 } else {
                     this.nowIndex++;
@@ -198,7 +200,9 @@
                         }
 
                     }else {
-                        this.$emit('change',this.nowIndex);
+                        if(this.nowIndex < this.list.length){
+                            this.$emit('change',this.nowIndex);
+                        }
                     }
                 }
                 this.noLast = true;
@@ -291,8 +295,8 @@
         &.vertical .mui-swipe__indicators{
             right:10px;
             top:50%;
+            bottom: auto;
             transform:translate3d(0,-50%,0);
-            -webkit-transform:translate3d(0,-50%,0);
             .swiper-pagination-bullet{
                 display: block;
                 margin:6px 0;
