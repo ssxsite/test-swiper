@@ -43,7 +43,6 @@
             </div>
             <div class="progress">
                 <div class="border_progress" :style="'width:'+videoProcess+'px'"></div>
-                <!--                    <i class="duration-icon" :style="`left:${videoProcess -12}px`" v-show="videoProcess > 16"></i>-->
             </div>
         </div>
     </div>
@@ -117,8 +116,25 @@
                     this.showPlayer = true;
                 }, 100);
             },
-            pageChange(index){
-                console.log('pageChange',index);
+            pageChange(index) {
+                //改变的时候 暂停当前播放的视频
+                clearInterval(videoProcessInterval);
+                this.videoProcess = 0;
+                let video = null;
+                if(this.loop){
+                    video = document.querySelectorAll("video")[this.video_current+1];
+                }else {
+                    video = document.querySelectorAll("video")[this.video_current];
+                }
+                video.currentTime = 0;
+                video.pause();
+                this.playOrPause = false;
+                this.video_current = index;
+                this.playOrPause = true;
+                this.iconPlayShow = true;
+                this.isVideoShow = true;
+                this.show_time = false;
+                this.$emit('scrollVideo',this.video_current);
             },
             pauseVideo() { //暂停\播放
                 try {
@@ -169,13 +185,10 @@
                 videoProcessInterval = setInterval(() => {
                     this.changeProcess(video);
                 }, 100);
-                // this.getVideoDuration();
-                // this.show_time = true;
             },
             //记录播放进度
-            changeProcess() {
+            changeProcess(video) {
                 let progress = document.querySelector('.progress');
-                let video = document.querySelectorAll("video")[this.video_current];
                 let currentTime = video.currentTime.toFixed(1);
                 let duration = video.duration.toFixed(1);
                 this.videoProcess = (currentTime / duration) * progress.offsetWidth;

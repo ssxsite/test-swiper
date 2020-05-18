@@ -36,7 +36,7 @@
 
 <script>
     export default {
-        name: 'RFullScreenVideo',
+        name: 'RSwiper',
         props: {
             'list': {
                 type: Array,
@@ -123,7 +123,6 @@
                 };
             },
         },
-
         mounted() {
             this.initSwiper();
             //是否自动播放
