@@ -1,7 +1,7 @@
 <template>
   <div>
     <swiper :list='list' :autoPlay="0" :paginationVisible="true" :vertical="false"
-            :height="100"  :loop="true" :initPage="1" :indicatorColor="'yellow'">
+            :height="200"  :loop="true" :initPage="1" :indicatorColor="'yellow'">
       <div  v-for="(item,index) in list" :key="index"  class="mui-swiper-slide">
         <img :src="item.imgSrc"   style="max-width:100%;"/>
       </div>

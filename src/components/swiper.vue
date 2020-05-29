@@ -137,6 +137,7 @@
                     this.domTimer = setTimeout(() => {
                         this.swiperWrap = this.$el.querySelector('.mui-swipe-wrap');
                         if(this.vertical){
+                            console.log('this.swiperWrap',this.swiperWrap.children);
                             this.swiperWrap.children.forEach((child) => {
                                 child.style.height = this.height + 'px'
                             },)
